@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>بازی مافیا</title>
+  <style>
+    body {
+      font-family: Tahoma, Arial, sans-serif;
+      direction: rtl;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background: #f9f9f9;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 32px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .settings {
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+
+    input[type=number] {
+      width: 60px;
+      padding: 5px;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    button {
+      padding: 8px 15px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #4CAF50;
+      color: #fff;
+      cursor: pointer;
+      margin: 3px;
+    }
+
+    button:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+
+    #playersArea {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .role-box {
+      display: none;
+      margin: 10px auto;
+      padding: 15px 10px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+      background: #ff6b6b;
+      border-radius: 10px;
+      width: 250px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>بازی مافیا</h1>
+  
+  <div class="settings">
+    <label>تعداد بازیکن‌ها: </label>
+    <input type="number" id="numPlayers" min="4" max="20" value="5">
+    <button onclick="startGame()">شروع بازی</button>
+  </div>
+
+  <div id="playersArea"></div>
+  <div id="roleBox" class="role-box"></div>
+
+  <script>
+    const uniqueRoles = ["تفنگدار", "جان‌سخت"];
+    const mustHaveRoles = ["دکتر", "کارآگاه"];
+    let playerRoles = [];
+
+    function startGame() {
+      let num = parseInt(document.getElementById("numPlayers").value);
+      if (isNaN(num) || num < 4) { alert("حداقل 4 بازیکن لازم است!"); return; }
+
+      let numMafia = (num <= 4) ? 1 :
+                     (num <= 7) ? 2 :
+                     (num <= 10) ? 3 :
+                     (num <= 13) ? 4 :
+                     (num <= 16) ? 5 : 6;
+
+      let roles = [...mustHaveRoles];
+      if (num >= 5) roles.push("حرفه‌ای");
+      for (let i = 0; i < numMafia; i++) roles.push("مافیا");
+
+      let availableUnique = [...uniqueRoles];
+      let remaining = num - roles.length;
+      for (let i = 0; i < remaining; i++) {
+        if (availableUnique.length > 0) {
+          let idx = Math.floor(Math.random() * availableUnique.length);
+          roles.push(availableUnique[idx]);
+          availableUnique.splice(idx,1);
+        } else {
+          roles.push("شهروند");
+        }
+      }
+
+      playerRoles = shuffle([...roles]);
+
+      let area = document.getElementById("playersArea");
+      area.innerHTML = "";
+      for (let i = 0; i < num; i++) {
+        let btn = document.createElement("button");
+        btn.textContent = "بازیکن " + (i+1);
+        btn.onclick = () => showRole(i, btn);
+        area.appendChild(btn);
+      }
+    }
+
+    function showRole(index, btn) {
+      let box = document.getElementById("roleBox");
+      box.innerHTML = "نقش شما: <b>" + playerRoles[index] + "</b>";
+      box.style.display = "block";
+
+      setTimeout(() => {
+        box.style.display = "none";
+        btn.disabled = true;
+      }, 3000);
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+  </script>
+</body>
+</html>
