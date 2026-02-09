@@ -954,23 +954,46 @@
       showSection("numPlayersSection");
     }
 
-    function renderRoleSelections() {
-      const rolesGrid = document.getElementById("rolesGrid");
-      rolesGrid.innerHTML = "";
-      selectedRoles = {};
-
+    function calculateDefaultRoles() {
+      const roles = {};
+      
+      // نقش‌های اجباری
+      roles["دکتر"] = 1;
+      roles["کارآگاه"] = 1;
+      
+      // محاسبه تعداد مافیا بر اساس تعداد بازیکن‌ها
       let numMafia = (numPlayers <= 4) ? 1 :
                      (numPlayers <= 7) ? 2 :
                      (numPlayers <= 10) ? 3 :
                      (numPlayers <= 13) ? 4 :
                      (numPlayers <= 16) ? 5 : 6;
+      
+      roles["مافیا"] = numMafia;
+      
+      // اگر بیشتر از 5 نفر: حرفه‌ای اضافه شود
+      if (numPlayers > 5) {
+        roles["حرفه‌ای"] = 1;
+      }
+      
+      // اگر بیشتر از 6 نفر: نقش‌های دیگر اضافه شوند
+      if (numPlayers > 6) {
+        roles["تفنگدار"] = 1;
+        roles["جان‌سخت"] = 1;
+      }
+      
+      // باقی افراد شهروند
+      let totalAssigned = Object.values(roles).reduce((a, b) => a + b, 0);
+      roles["شهروند"] = numPlayers - totalAssigned;
+      
+      return roles;
+    }
 
-      // ابتدا نقش‌های اجباری
-      selectedRoles["دکتر"] = 1;
-      selectedRoles["کارآگاه"] = 1;
-      selectedRoles["مافیا"] = numMafia;
+    function renderRoleSelections() {
+      const rolesGrid = document.getElementById("rolesGrid");
+      rolesGrid.innerHTML = "";
+      selectedRoles = calculateDefaultRoles();
 
-      // حالا تمام نقش‌ها را رندر کن
+      // رندر تمام نقش‌ها
       for (const [role, info] of Object.entries(allRoles)) {
         const count = selectedRoles[role] || 0;
         const roleDiv = document.createElement("div");
@@ -1016,7 +1039,7 @@
       const checkedRoles = [];
       document.querySelectorAll(".role-checkbox-item input[type='checkbox']:checked").forEach(cb => {
         const roleName = cb.id.replace("role-", "");
-        checkedRoles.push(roleName);
+        checkedRoles.includes(roleName) || checkedRoles.push(roleName);
       });
 
       let numMafia = selectedRoles["مافیا"] || 0;
